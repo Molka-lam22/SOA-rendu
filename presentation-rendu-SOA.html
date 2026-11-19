@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web Services &amp; APIs REST – Présentation interactive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME TOKENS (light default, dark via [data-theme=dark]) ===== */
+:root{
+  /* Pantone palette: Mary's Rose #F7D2D7, Endless Sky #8096B8, Gossamer Green #B3CFBF, Pastel Yellow #F0E8B1, Orchid Petal #C2B5D0, Heavenly Pink #F5DCE0, Delicate Blue #C1D8E8, Cappuccino Foam #F4F3E8, Hushed Violet #D1BCBF */
+  --bg:#FFFFFF;--fg:#2E3A59;--mut:#5F6785;--card:#F4F3E8;--bd:#E4DADC;--code:#2E3A59;--codefg:#F4F3E8;
+  --soap:#F0E8B1;--rest:#B3CFBF;--gql:#C2B5D0;
+  --soapt:#8A7B1F;--restt:#3F7A5E;--gqlt:#7A64A0;
+  --get:#C1D8E8;--post:#B3CFBF;--put:#F0E8B1;--patch:#C2B5D0;--delete:#F7D2D7;
+  --on:#2E3A59;--acc:#8096B8;--ring:#5F7399;--sh:#8096B855;
+  --grad:linear-gradient(120deg,#6A80A6,#9C86B8 55%,#D68E9C);
+  --gf:linear-gradient(120deg,#C1D8E8,#C2B5D0 50%,#F7D2D7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+[data-theme=dark]{--bg:#1F2640;--fg:#F4F3E8;--mut:#B9C1DC;--card:#2A3354;--bd:#3D4872;--code:#151A2E;
+  --acc:#C2B5D0;--ring:#C1D8E8;--sh:#00000066;
+  --soapt:#F0E8B1;--restt:#B3CFBF;--gqlt:#C2B5D0;
+  --grad:linear-gradient(120deg,#C1D8E8,#C2B5D0 50%,#F7D2D7)}
+*{box-sizing:border-box}
+html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+body{margin:0;font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.55;transition:background .3s,color .3s}
+h1,h2,h3{line-height:1.1;margin:0 0 .5em}
+h2{font-size:clamp(1.9rem,4.5vw,3.2rem);letter-spacing:-.02em}
+h3{font-size:1.15rem}
+p{margin:.4em 0}
+a{color:inherit}
+:focus-visible{outline:3px solid #8096B8;outline-offset:2px;border-radius:6px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);max-width:62ch;font-size:1.05rem}
+pre,code{font-family:var(--mono)}
+pre{background:var(--code);color:var(--codefg);padding:14px;border-radius:12px;overflow:auto;font-size:.8rem;margin:0;line-height:1.5}
+.k{color:#C1D8E8}.s{color:#B3CFBF}.n{color:#F0E8B1}.b{color:#F7D2D7}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px}
+
+/* ===== NAV, PROGRESS, DOTS ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:6px;padding:10px 4vw;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd)}
+nav .logo{font-weight:700;margin-right:auto;white-space:nowrap}
+nav .links{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav a{text-decoration:none;padding:6px 10px;border-radius:99px;font-size:.85rem;white-space:nowrap;color:var(--mut)}
+nav a:hover,nav a.on{background:var(--card);color:var(--fg)}
+#theme{border:1px solid var(--bd);background:var(--card);border-radius:99px;width:38px;height:38px;flex:none}
+#bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--grad);z-index:60}
+#dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:10px}
+#dots button{width:12px;height:12px;border-radius:50%;border:2px solid var(--mut);background:transparent;padding:0;transition:.25s}
+#dots button.on{background:var(--acc);border-color:var(--acc);transform:scale(1.4)}
+#pn{position:fixed;right:14px;bottom:14px;z-index:40;display:flex;gap:8px}
+#pn button{width:46px;height:46px;border-radius:50%;border:0;background:var(--gf);color:var(--on);font-size:1.2rem;box-shadow:0 6px 20px var(--sh)}
+#pn button:disabled{opacity:.35}
+
+/* ===== SLIDES ===== */
+.slide{min-height:100vh;padding:92px 7vw 80px;position:relative;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.badge{display:inline-block;font-family:var(--mono);font-weight:600;font-size:.78rem;padding:3px 10px;border-radius:8px;color:var(--on)}
+.GET{background:var(--get)}.POST{background:var(--post)}.PUT{background:var(--put)}.PATCH{background:var(--patch)}.DELETE{background:var(--delete)}
+.t-soap{--c:var(--soap);--ct:var(--soapt)}.t-rest{--c:var(--rest);--ct:var(--restt)}.t-gql{--c:var(--gql);--ct:var(--gqlt)}
+
+/* hero */
+#hero{text-align:center;align-items:center}
+#net{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+#hero>*:not(canvas){position:relative;z-index:1}
+#hero h1{font-size:clamp(2.6rem,9vw,6.5rem);letter-spacing:-.04em}
+.cta{border:0;background:var(--gf);color:var(--on);padding:14px 28px;border-radius:99px;font-weight:700;font-size:1.05rem;box-shadow:0 10px 30px var(--sh);transition:transform .2s}
+.cta:hover{transform:translateY(-3px) scale(1.03)}
+.chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:20px 0}
+
+/* diagram */
+#diag{width:100%;max-width:900px;margin:10px auto}
+#diag .node rect{stroke-width:3;fill:var(--card)}
+#diag text{fill:var(--fg);font-family:'Space Grotesk',sans-serif}
+#pkt{transition:transform 1.6s ease-in-out,fill .3s}
+.fam{border-top:6px solid var(--c)}
+.fam h3{color:var(--ct)}
+
+/* timeline */
+.tl{display:flex;gap:0;position:relative;margin:26px 0;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:30px;height:6px;border-radius:9px;background:linear-gradient(90deg,var(--soap),var(--rest),var(--gql))}
+.stage{flex:1;min-width:150px;background:none;border:0;text-align:center;position:relative;padding:0 8px}
+.stage i{display:block;width:60px;height:60px;border-radius:50%;margin:0 auto 10px;background:var(--c);border:6px solid var(--bg);transition:transform .3s;box-shadow:0 0 0 0 var(--c)}
+.stage:hover i,.stage[aria-selected=true] i{transform:scale(1.25);box-shadow:0 0 0 10px color-mix(in srgb,var(--c) 30%,transparent)}
+.stage b{display:block;font-size:1.2rem}.stage small{color:var(--mut)}
+#detail{border-left:8px solid var(--c);min-height:150px;animation:pop .4s}
+@keyframes pop{from{opacity:0;transform:scale(.97)}}
+#detail ul{margin:.4em 0;padding-left:1.2em}
+
+/* compare + table */
+.cmp .card{border-top:6px solid var(--c);min-width:0}
+.cmp h3{color:var(--ct)}.cmp pre{margin:6px 0 12px}
+.tw{overflow-x:auto}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:600px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--bd);transition:opacity .3s,background .3s}
+th[data-t]{color:var(--on)}th[data-t=soap]{background:var(--soap)}th[data-t=rest]{background:var(--rest)}th[data-t=gql]{background:var(--gql)}
+table[data-hl=soap] [data-t]:not([data-t=soap]),table[data-hl=rest] [data-t]:not([data-t=rest]),table[data-hl=gql] [data-t]:not([data-t=gql]){opacity:.2}
+table[data-hl=soap] td[data-t=soap]{background:#F0E8B1AA}table[data-hl=rest] td[data-t=rest]{background:#B3CFBF77}table[data-hl=gql] td[data-t=gql]{background:#C2B5D077}
+.seg{display:inline-flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.seg button{border:1px solid var(--bd);background:var(--card);padding:6px 14px;border-radius:99px}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+
+/* verbs, status, put/patch */
+.verb{border-top:6px solid var(--c)}
+.codes button{text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;border-left:8px solid var(--c)}
+.codes b{font-size:1.8rem;color:var(--ct);font-family:var(--mono)}
+.codes span{display:block;max-height:0;overflow:hidden;color:var(--mut);transition:max-height .35s}
+.codes button[aria-expanded=true] span{max-height:140px}
+.fams{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.fams button{text-align:center;background:var(--card);border:2px solid var(--bd);border-top:8px solid var(--c);border-radius:16px;padding:12px 8px;transition:.2s}
+.fams button b{display:block;font-size:1.7rem;font-family:var(--mono)}
+.fams button small{color:var(--mut)}
+.fams button:hover{transform:translateY(-3px)}
+.fams button[aria-selected=true]{background:var(--c);border-color:var(--c);color:var(--on)}
+.fams button[aria-selected=true] small{color:var(--on)}
+#fdetail{border-left:8px solid var(--c);animation:pop .4s}
+#fdetail>p{margin:0 0 12px}
+.cl{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.cl div{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px 14px}
+.cl b{font-family:var(--mono);font-size:1.4rem}.cl span{display:block;color:var(--mut);font-size:.9rem}
+.demo{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));align-items:start}
+
+/* endpoints */
+.row{width:100%;display:grid;grid-template-columns:110px 1.1fr 1.4fr .8fr;gap:10px;align-items:center;text-align:left;background:var(--card);border:1px solid var(--bd);border-left:8px solid var(--c);border-radius:14px;padding:12px 16px;transition:transform .2s}
+.row:hover{transform:translateX(4px)}
+.row code{font-weight:600}
+.ex{display:none;margin:0 0 12px 8px;padding:16px;border:1px solid var(--bd);border-radius:0 0 14px 14px;background:var(--card);gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.ex.open{display:grid;animation:pop .35s}
+.ex h4{margin:0 0 6px}
+.thead{display:grid;grid-template-columns:110px 1.1fr 1.4fr .8fr;gap:10px;padding:0 24px 8px;color:var(--mut);font-size:.85rem}
+
+/* playground */
+.pg{display:grid;gap:18px;grid-template-columns:1.3fr 1fr}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+.bar select,.bar input,textarea{background:var(--card);border:2px solid var(--bd);border-radius:10px;padding:10px}
+.bar input{flex:1;min-width:150px;font-family:var(--mono)}
+textarea{width:100%;height:120px;font-family:var(--mono);font-size:.85rem;margin:10px 0;resize:vertical}
+.send{border:0;border-radius:10px;padding:10px 24px;font-weight:700;color:var(--on);background:var(--gf)}
+.stat{display:flex;gap:14px;align-items:center;margin:12px 0 8px;font-family:var(--mono);font-size:.9rem;flex-wrap:wrap}
+.sc{font-weight:700;padding:2px 10px;border-radius:8px;color:var(--on);background:var(--patch)}
+.sc.ok{background:var(--post)}.sc.err{background:var(--delete)}
+#list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+#list li{display:flex;gap:10px;align-items:center;padding:10px 14px;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}
+#list li.flash{animation:fl 1s}
+@keyframes fl{from{background:#B3CFBFAA;transform:scale(1.03)}}
+#list em{font-style:normal;font-family:var(--mono);background:var(--gf);color:var(--on);border-radius:8px;padding:0 8px}
+#list small{color:var(--mut)}
+.chip{border:1px dashed var(--bd);background:none;border-radius:99px;padding:4px 12px;font-size:.8rem}
+
+/* quiz */
+.quiz{max-width:760px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:14px 16px;background:var(--card);border:2px solid var(--bd);border-radius:14px;transition:.2s}
+.opt:hover:not(:disabled){border-color:var(--acc);transform:translateX(4px)}
+.opt.right{border-color:var(--post);background:#B3CFBF77}.opt.wrong{border-color:var(--delete);background:#F7D2D799}
+#qbar{height:8px;border-radius:9px;background:var(--bd);overflow:hidden}#qbar i{display:block;height:100%;width:0;background:var(--grad);transition:width .4s}
+#fb{min-height:3em;color:var(--mut)}
+#conf{position:fixed;inset:0;pointer-events:none;z-index:70;width:100%;height:100%}
+@media(max-width:800px){.pg{grid-template-columns:1fr}.row,.thead{grid-template-columns:90px 1fr}.row .d,.row .p,.thead span:nth-child(n+3){display:none}#dots{display:none}.slide{padding:84px 5vw 90px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="bar" role="progressbar" aria-label="Progression de la présentation" aria-valuemin="0" aria-valuemax="100"></div>
+<nav aria-label="Principal">
+  <span class="logo g">REST·Lab</span>
+  <div class="links" id="links"></div>
+  <button id="theme" aria-label="Basculer le mode sombre">🌙</button>
+</nav>
+<div id="dots" role="tablist" aria-label="Navigation des diapositives"></div>
+<div id="pn"><button id="prev" aria-label="Diapositive précédente">‹</button><button id="next" aria-label="Diapositive suivante">›</button></div>
+<canvas id="conf" aria-hidden="true"></canvas>
+
+<main>
+<!-- 0 HERO -->
+<section class="slide" id="hero" data-title="Accueil">
+  <canvas id="net" aria-hidden="true"></canvas>
+
+  <h1 class="g">Web Services<br>&amp; APIs REST</h1>
+  <p class="sub">Comment des applications construites avec des technologies différentes communiquent entre elles, et comment utiliser le style le plus populaire : REST.</p>
+  <div class="chips"><span class="badge GET">GET</span><span class="badge POST">POST</span><span class="badge PUT">PUT</span><span class="badge PATCH">PATCH</span><span class="badge DELETE">DELETE</span></div>
+  <div class="chips authors">
+    <span class="badge">Molka Lamloum</span>
+    <span class="badge">Sinda Hedhli</span>
+    <span class="badge">Oumaima Dhaouadi</span>
+    <span class="badge">Rihab Ktiti</span>
+    <span class="badge">Roua Sdiri</span>
+  </div>
+  <button class="cta" onclick="go(1)">Commencer la visite ›</button>
+</section>
+
+<!-- 1 WEB SERVICES -->
+<section class="slide" id="ws" data-title="Web Services">
+  <h2 class="rv">Qu’est-ce qu’un <span class="g">web service</span> ?</h2>
+  <p class="sub rv">Deux applications écrites dans des technologies différentes échangent des données sur le réseau grâce à une <b>API</b>. Aucune n’a besoin de savoir comment l’autre est construite.</p>
+  <svg id="diag" class="rv" viewBox="0 0 800 220" role="img" aria-label="Une application Java envoie une requête à une API servie par une application Python, et la réponse revient">
+    <defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#D1BCBF"/><stop offset="1" stop-color="#8096B8"/></linearGradient></defs>
+    <line x1="170" y1="110" x2="320" y2="110" stroke="url(#lg)" stroke-width="4" stroke-dasharray="8 6"/>
+    <line x1="480" y1="110" x2="630" y2="110" stroke="url(#lg)" stroke-width="4" stroke-dasharray="8 6"/>
+    <g class="node"><rect x="20" y="60" width="150" height="100" rx="18" stroke="#D1BCBF"/><text x="95" y="105" text-anchor="middle" font-size="26" font-weight="700">Java</text><text x="95" y="132" text-anchor="middle" font-size="14">Application cliente</text></g>
+    <g class="node"><rect x="325" y="60" width="150" height="100" rx="18" stroke="#B3CFBF"/><text x="400" y="105" text-anchor="middle" font-size="26" font-weight="700">API</text><text x="400" y="132" text-anchor="middle" font-size="14">Contrat HTTP</text></g>
+    <g class="node"><rect x="630" y="60" width="150" height="100" rx="18" stroke="#8096B8"/><text x="705" y="105" text-anchor="middle" font-size="26" font-weight="700">Python</text><text x="705" y="132" text-anchor="middle" font-size="14">Application serveur</text></g>
+    <circle id="pkt" cx="95" cy="40" r="14" fill="#D1BCBF" style="transform:translate(0,0)"/>
+    <text id="dlbl" x="400" y="204" text-anchor="middle" font-size="16">Cliquez sur « Envoyer la requête » pour voir le flux.</text>
+  </svg>
+  <div style="text-align:center" class="rv"><button class="cta" id="flow">Envoyer la requête</button></div>
+  <h3 style="margin-top:28px" class="rv">Trois familles de web services</h3>
+  <div class="grid">
+    <div class="card fam t-soap rv"><h3>SOAP</h3><p>Le standard « étendu » et lourd : des messages XML avec des contrats stricts.</p></div>
+    <div class="card fam t-rest rv"><h3>REST API</h3><p>Des ressources accessibles par des URL et des verbes HTTP, échangeant généralement du JSON.</p></div>
+    <div class="card fam t-gql rv"><h3>GraphQL</h3><p>Un seul endpoint et un langage de requête : le client choisit les champs exacts.</p></div>
+  </div>
+</section>
+
+<!-- 2 EVOLUTION -->
+<section class="slide" id="evo" data-title="Évolution">
+  <h2 class="rv">De SOAP à REST puis <span class="g">GraphQL</span></h2>
+  <p class="sub rv">Cliquez ou survolez une étape pour ouvrir sa fiche.</p>
+  <div class="tl rv" id="tl" role="tablist"></div>
+  <div class="card" id="detail" aria-live="polite"></div>
+</section>
+
+<!-- 3 COMPARE -->
+<section class="slide" id="cmp" data-title="Comparaison">
+  <h2 class="rv">Mêmes données, <span class="g">trois styles</span></h2>
+  <p class="sub rv">Objectif : récupérer l’étudiant n°1 et ses cours.</p>
+  <div class="grid cmp rv" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))" id="cmpg"></div>
+  <h3 style="margin-top:30px" class="rv">Laquelle choisir ? Mettez une technologie en avant :</h3>
+  <div class="seg rv" id="seg" role="group" aria-label="Mettre une colonne en avant"></div>
+  <div class="tw rv"><table id="tbl" data-hl="">
+    <thead><tr><th>Critères</th><th data-t="soap">SOAP</th><th data-t="rest">REST</th><th data-t="gql">GraphQL</th></tr></thead>
+    <tbody></tbody></table></div>
+</section>
+
+<!-- 4 HTTP BASICS -->
+<section class="slide" id="http" data-title="HTTP">
+  <h2 class="rv"><span class="g">Verbes</span> HTTP &amp; codes de statut</h2>
+  <div class="grid" id="verbs"></div>
+  <h3 style="margin-top:24px" class="rv">PUT vs PATCH : essayez !</h3>
+  <div class="demo rv">
+    <div><pre id="orig"></pre><div class="seg"><button id="bput">PUT {email}</button><button id="bpatch">PATCH {email}</button><button id="breset">Réinitialiser</button></div></div>
+    <p id="pp" class="sub" aria-live="polite">Envoyez le même corps <code>{"email":"new@esprit.tn"}</code> avec chaque verbe et comparez.</p>
+  </div>
+  <h3 style="margin-top:24px" class="rv">Familles de codes de statut (cliquez sur une famille)</h3>
+  <div class="fams" id="fams" role="tablist"></div>
+  <div class="card" id="fdetail" aria-live="polite"></div>
+</section>
+
+<!-- 5 ENDPOINTS -->
+<section class="slide" id="endp" data-title="Endpoints">
+  <h2 class="rv">La ressource <span class="g">Students</span></h2>
+  <p class="sub rv">Cliquez sur une ligne pour voir une requête, une réponse et une commande curl.</p>
+  <div class="thead" aria-hidden="true"><span>Verbe</span><span>Endpoint</span><span>Description</span><span>Corps</span></div>
+  <div id="eps"></div>
+</section>
+
+<!-- 6 PLAYGROUND -->
+<section class="slide" id="play" data-title="Terrain de jeu">
+  <h2 class="rv"><span class="g">Terrain de jeu</span> API en direct</h2>
+  <p class="sub rv">Une fausse API en mémoire vit dans cette page. Essayez de mauvais identifiants et de mauvais corps pour voir les erreurs 404 et 400.</p>
+  <div class="pg rv">
+    <div class="card">
+      <div class="bar">
+        <select id="m" aria-label="Méthode HTTP"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select>
+        <input id="url" value="/students" aria-label="Endpoint" spellcheck="false">
+        <button class="send" id="go">Envoyer</button>
+      </div>
+      <div class="bar" style="margin-top:8px" id="chips"></div>
+      <label for="body" class="sub" style="font-size:.85rem">Corps JSON</label>
+      <textarea id="body" spellcheck="false"></textarea>
+      <div class="stat"><span class="sc" id="sc">—</span><span id="tm">— ms</span></div>
+      <pre id="out" aria-live="polite" style="min-height:130px;max-height:260px">Cliquez sur Envoyer.</pre>
+    </div>
+    <div class="card"><h3>Base de données : <code>/students</code></h3><ul id="list"></ul></div>
+  </div>
+</section>
+
+<!-- 7 QUIZ -->
+<section class="slide" id="quiz" data-title="Quiz">
+  <h2 class="rv">Testez-<span class="g">vous</span></h2>
+  <div class="card quiz rv">
+    <div id="qbar"><i></i></div>
+    <p id="qn" class="sub"></p>
+    <h3 id="qt" style="font-size:1.4rem"></h3>
+    <div id="qo"></div>
+    <p id="fb" aria-live="polite"></p>
+    <button class="cta" id="qnext" hidden>Suivant</button>
+  </div>
+</section>
+</main>
+
+<script>
+/* ===== HELPERS ===== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const hl=j=>esc(j).replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|-?\b\d+\.?\d*\b/g,(m,s,c,b)=>s?(c?`<span class=k>${s}</span>${c}`:`<span class=s>${s}</span>`):b?`<span class=b>${m}</span>`:`<span class=n>${m}</span>`);
+const J=(o,i=2)=>JSON.stringify(o,null,i);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ===== THEME ===== */
+const root=document.documentElement,tb=$('#theme');
+function setTheme(t){root.dataset.theme=t;tb.textContent=t==='dark'?'☀️':'🌙'}
+setTheme('light');
+tb.onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark');
+
+/* ===== SLIDE NAVIGATION ===== */
+const slides=$$('.slide');let cur=0;
+$('#links').innerHTML=slides.map((s,i)=>`<a href="#${s.id}" data-i="${i}">${s.dataset.title}</a>`).join('');
+$('#dots').innerHTML=slides.map((s,i)=>`<button aria-label="Aller à ${s.dataset.title}" data-i="${i}"></button>`).join('');
+function go(i){i=Math.max(0,Math.min(slides.length-1,i));slides[i].scrollIntoView({behavior:'smooth'})}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-i]');if(t){e.preventDefault();go(+t.dataset.i)}});
+$('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+addEventListener('keydown',e=>{
+  if(e.target.closest('input,textarea,select,[contenteditable]'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+});
+function onScroll(){
+  cur=0;slides.forEach((s,i)=>{if(s.getBoundingClientRect().top<=innerHeight*.4)cur=i});
+  const p=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)*100;
+  $('#bar').style.width=p+'%';$('#bar').setAttribute('aria-valuenow',Math.round(p));
+  $$('#dots button,#links a').forEach(b=>b.classList.toggle('on',+b.dataset.i===cur));
+  $('#prev').disabled=cur===0;$('#next').disabled=cur===slides.length-1;
+}
+addEventListener('scroll',onScroll,{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.15});
+
+/* ===== HERO NETWORK CANVAS ===== */
+(function(){
+  const c=$('#net'),x=c.getContext('2d');let W,H,pts=[];
+  const size=()=>{W=c.width=c.offsetWidth;H=c.height=c.offsetHeight;pts=Array.from({length:Math.min(60,W/18)},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.6,vy:(Math.random()-.5)*.6}))};
+  size();addEventListener('resize',size);
+  const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  (function draw(t){
+    x.clearRect(0,0,W,H);const dark=root.dataset.theme==='dark';
+    pts.forEach(p=>{if(!still){p.x+=p.vx;p.y+=p.vy}if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1});
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<150){x.strokeStyle=`rgba(${dark?'193,180,209':'127,148,184'},${.35-d/450})`;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();
+        if(i%7===0){const k=(t/1500+i)%1;x.fillStyle='#8096B8';x.beginPath();x.arc(a.x+(b.x-a.x)*k,a.y+(b.y-a.y)*k,3,0,7);x.fill()}}
+    }
+    pts.forEach(p=>{x.fillStyle=dark?'#C2B5D0':'#8096B8';x.beginPath();x.arc(p.x,p.y,3,0,7);x.fill()});
+    requestAnimationFrame(draw);
+  })(0);
+})();
+
+/* ===== SLIDE 1: Java -> API -> Python animation ===== */
+$('#flow').onclick=async function(){
+  const p=$('#pkt'),l=$('#dlbl');this.disabled=true;
+  const step=async(tx,col,msg,ms=3200)=>{p.style.fill=col;p.style.transform=`translate(${tx}px,70px)`;l.textContent=msg;await sleep(ms)};
+  await step(0,'#D1BCBF','Java construit une requête HTTP…',2000);
+  await step(310,'#B3CFBF','La requête arrive à l’API : GET /students/1');
+  await step(610,'#8096B8','Python lit la base de données et prépare une réponse…');
+  await step(310,'#8096B8','La réponse repart via l’API (JSON)');
+  await step(0,'#B3CFBF','Java reçoit {"id":1,"name":"Amira"} ✓');
+  this.disabled=false;
+};
+
+/* ===== SLIDE 2: Timeline ===== */
+const EVO=[
+ {c:'soap',n:'SOAP',y:'~1998',h:'Lourd, strict, basé sur XML',l:['Les messages sont des enveloppes XML','Un fichier WSDL décrit le contrat','Très strict, avec des standards intégrés (sécurité, transactions)','Verbeux et lourd à analyser']},
+ {c:'rest',n:'REST',y:'2000',h:'Simple, orienté ressources',l:['Ressources identifiées par des URL','Verbes HTTP : GET, POST, PUT/PATCH, DELETE','Généralement du JSON, léger','Sans état : chaque requête contient tout le nécessaire']},
+ {c:'gql',n:'GraphQL',y:'2015',h:'Demandez exactement ce dont vous avez besoin',l:['Un seul endpoint (/graphql)','Le client liste les champs exacts dont il a besoin','Pas de sur-récupération, pas de sous-récupération','Un schéma typé décrit toutes les données']}];
+$('#tl').innerHTML=EVO.map((e,i)=>`<button class="stage t-${e.c}" role="tab" aria-selected="${i===0}" data-k="${i}"><i></i><b>${e.n}</b><small>${e.y}</small></button>`).join('');
+function showEvo(i){const e=EVO[i];$$('.stage').forEach((s,k)=>s.setAttribute('aria-selected',k===i));
+  const d=$('#detail');d.className='card t-'+e.c;d.style.animation='none';d.offsetWidth;d.style.animation='';
+  d.innerHTML=`<h3 style="color:var(--ct)">${e.n} · ${e.h}</h3><ul>${e.l.map(x=>`<li>${x}</li>`).join('')}</ul>`}
+$$('.stage').forEach(s=>{s.onclick=s.onmouseenter=()=>showEvo(+s.dataset.k)});showEvo(0);
+
+/* ===== SLIDE 3: Comparison ===== */
+const CMP=[
+ {c:'soap',n:'SOAP',code:[['Requête : POST /ws (enveloppe XML)',`<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+  <soap:Body>
+    <GetStudent><Id>1</Id></GetStudent>
+  </soap:Body>
+</soap:Envelope>`],['Réponse',`<soap:Envelope ...>
+  <soap:Body>
+    <Student>
+      <Id>1</Id><Name>Amira</Name>
+      <Email>amira@esprit.tn</Email>
+      <Courses><Course>Web</Course>
+      <Course>AI</Course></Courses>
+    </Student>
+  </soap:Body>
+</soap:Envelope>`]]},
+ {c:'rest',n:'REST',code:[['Requête : 2 URL',`GET /students/1
+GET /students/1/courses`],['Réponse (JSON, champs en trop inclus)',J({id:1,name:'Amira',email:'amira@esprit.tn',age:21,courses:[{title:'Web'},{title:'AI'}]},1)]]},
+ {c:'gql',n:'GraphQL',code:[['Requête : POST /graphql',`{
+  student(id: 1) {
+    name
+    courses { title }
+  }
+}`],['Réponse (exactement les champs demandés)',J({data:{student:{name:'Amira',courses:[{title:'Web'},{title:'AI'}]}}},1)]]}];
+$('#cmpg').innerHTML=CMP.map(t=>`<div class="card t-${t.c}"><h3>${t.n}</h3>${t.code.map(([h,c])=>`<small>${h}</small><pre>${t.c==='soap'?esc(c):t.c==='rest'&&h.startsWith('Rép')||t.c==='gql'&&h.startsWith('Rép')?hl(c):esc(c)}</pre>`).join('')}</div>`).join('');
+const ROWS=[['Format','XML uniquement','JSON (aussi XML, texte)','JSON'],['Protocole','HTTP, SMTP… avec WSDL','HTTP','HTTP (un seul endpoint)'],['Flexibilité','Faible : contrat strict','Moyenne : ressources fixes','Élevée : le client façonne les données'],['Performance','Lent, messages lourds','Bonne, mise en cache possible','Excellente : un seul aller-retour'],['Courbe d’apprentissage','Raide','Douce','Moyenne'],['Cas d’usage','Banques, systèmes d’entreprise hérités','API publiques, applications mobiles et web','Interfaces complexes, mobile avec beaucoup de besoins en données']];
+$('#tbl tbody').innerHTML=ROWS.map(r=>`<tr><th scope="row">${r[0]}</th><td data-t="soap">${r[1]}</td><td data-t="rest">${r[2]}</td><td data-t="gql">${r[3]}</td></tr>`).join('');
+$('#seg').innerHTML=[['','Tout afficher'],['soap','SOAP'],['rest','REST'],['gql','GraphQL']].map(([k,t],i)=>`<button data-h="${k}" aria-pressed="${i===0}">${t}</button>`).join('');
+$$('#seg button').forEach(b=>b.onclick=()=>{$('#tbl').dataset.hl=b.dataset.h;$$('#seg button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+
+/* ===== SLIDE 4: Verbs, PUT/PATCH, status codes ===== */
+const VERBS=[['GET','Lire','Récupère des données. Sûr : ne modifie jamais rien.'],['POST','Créer','Envoie une nouvelle ressource dans le corps. Renvoie 201.'],['PUT','Remplacer','Remplace toute la ressource. Les champs manquants sont perdus.'],['PATCH','Modifier','Change uniquement les champs envoyés.'],['DELETE','Supprimer','Supprime la ressource. Renvoie généralement 204.']];
+$('#verbs').innerHTML=VERBS.map(v=>`<div class="card verb rv" style="--c:var(--${v[0].toLowerCase()})"><span class="badge ${v[0]}">${v[0]}</span><h3 style="margin-top:10px">${v[1]}</h3><p>${v[2]}</p></div>`).join('');
+const base={id:1,name:'Amira',email:'old@esprit.tn',age:21};
+const showO=o=>$('#orig').innerHTML=hl(J(o,1));showO(base);
+$('#bput').onclick=()=>{showO({id:1,email:'new@esprit.tn'});$('#pp').innerHTML='<b>PUT</b> a remplacé toute la ressource : <code>name</code> et <code>age</code> ont disparu.'};
+$('#bpatch').onclick=()=>{showO({...base,email:'new@esprit.tn'});$('#pp').innerHTML='<b>PATCH</b> a modifié uniquement <code>email</code> ; tout le reste est intact.'};
+$('#breset').onclick=()=>{showO(base);$('#pp').textContent='Envoyez le même corps avec chaque verbe et comparez.'};
+const FAMS=[
+ {k:'1xx',n:'Famille 100',t:'Informationnelle',c:'--get',d:'Le serveur a bien reçu la requête et continue le traitement. Rare en pratique.',l:[[100,'Continue','Le client peut continuer à envoyer le reste de sa requête.'],[101,'Switching Protocols','Le serveur accepte de changer de protocole (ex. WebSocket).'],[102,'Processing','Le serveur traite encore la requête, qui prend du temps.']]},
+ {k:'2xx',n:'Famille 200',t:'Succès',c:'--post',d:'La requête a été reçue, comprise et acceptée. Tout s’est bien passé.',l:[[200,'OK','La requête a réussi (GET, PUT, PATCH).'],[201,'Created','Une nouvelle ressource a été créée (POST).'],[202,'Accepted','Requête acceptée, mais traitée plus tard.'],[204,'No Content','Succès sans rien à renvoyer (DELETE).']]},
+ {k:'3xx',n:'Famille 300',t:'Redirection',c:'--put',d:'Le client doit faire une action de plus, souvent aller à une autre adresse.',l:[[301,'Moved Permanently','La ressource a déménagé définitivement vers une nouvelle URL.'],[302,'Found','Redirection temporaire vers une autre URL.'],[304,'Not Modified','Rien n’a changé : le client peut utiliser sa copie en cache.']]},
+ {k:'4xx',n:'Famille 400',t:'Erreur du client',c:'--delete',d:'La faute vient du client : requête invalide ou non autorisée.',l:[[400,'Bad Request','Le client a envoyé des données invalides.'],[401,'Unauthorized','Authentification manquante ou incorrecte.'],[403,'Forbidden','Identifié, mais pas le droit d’accéder à la ressource.'],[404,'Not Found','Cette ressource n’existe pas.'],[409,'Conflict','Conflit avec l’état actuel (ex. email déjà utilisé).'],[429,'Too Many Requests','Trop de requêtes envoyées en peu de temps.']]},
+ {k:'5xx',n:'Famille 500',t:'Erreur du serveur',c:'--patch',d:'La requête était valide, mais le serveur n’a pas réussi à la traiter.',l:[[500,'Internal Server Error','Le serveur a planté : ce n’est pas la faute du client.'],[502,'Bad Gateway','Réponse invalide reçue d’un autre serveur.'],[503,'Service Unavailable','Serveur surchargé ou en maintenance.'],[504,'Gateway Timeout','Un autre serveur a mis trop de temps à répondre.']]}];
+$('#fams').innerHTML=FAMS.map((f,i)=>`<button role="tab" aria-selected="${i===1}" data-f="${i}" style="--c:var(${f.c})"><b>${f.k}</b>${f.n}<br><small>${f.t}</small></button>`).join('');
+function showFam(i){const f=FAMS[i];$$('#fams button').forEach((b,k)=>b.setAttribute('aria-selected',k===i));
+  const d=$('#fdetail');d.style.setProperty('--c',`var(${f.c})`);d.style.animation='none';d.offsetWidth;d.style.animation='';
+  d.innerHTML=`<h3>${f.n} · ${f.t}</h3><p class="sub">${f.d}</p><div class="cl">${f.l.map(c=>`<div><b>${c[0]}</b> ${c[1]}<span>${c[2]}</span></div>`).join('')}</div>`}
+$$('#fams button').forEach(b=>b.onclick=()=>showFam(+b.dataset.f));showFam(1);
+
+/* ===== SLIDE 5: Endpoints ===== */
+const EP=[
+ ['GET','/students','Récupérer tous les étudiants','aucun','GET /students','200 OK',[{id:1,name:'Amira'},{id:2,name:'Youssef'}],'curl https://api.school.tn/students'],
+ ['POST','/students','Créer un étudiant','corps JSON','POST /students\nContent-Type: application/json\n\n'+J({name:'Sarra',email:'sarra@esprit.tn'},1),'201 Created',{id:3,name:'Sarra',email:'sarra@esprit.tn'},`curl -X POST https://api.school.tn/students \\\n  -H "Content-Type: application/json" \\\n  -d '{"name":"Sarra","email":"sarra@esprit.tn"}'`],
+ ['GET','/students/:id','Récupérer un étudiant','aucun','GET /students/1','200 OK',{id:1,name:'Amira',email:'amira@esprit.tn'},'curl https://api.school.tn/students/1'],
+ ['PUT','/students/:id','Modifier un étudiant (PUT / PATCH)','corps JSON','PATCH /students/1\n\n'+J({email:'amira@new.tn'},1),'200 OK',{id:1,name:'Amira',email:'amira@new.tn'},`curl -X PATCH https://api.school.tn/students/1 \\\n  -H "Content-Type: application/json" \\\n  -d '{"email":"amira@new.tn"}'`],
+ ['DELETE','/students/:id','Supprimer un étudiant','aucun','DELETE /students/1','204 No Content',null,'curl -X DELETE https://api.school.tn/students/1']];
+$('#eps').innerHTML=EP.map((e,i)=>`<button class="row ${e[0]} rv" style="--c:var(--${e[0].toLowerCase()});background:var(--card);color:var(--fg)" aria-expanded="false" aria-controls="ex${i}"><span><span class="badge ${e[0]}">${e[0]}</span>${e[0]==='PUT'?' <span class="badge PATCH">PATCH</span>':''}</span><code>${e[1]}</code><span class="d">${e[2]}</span><span class="p">${e[3]}</span></button>
+<div class="ex" id="ex${i}"><div><h4>Requête</h4><pre>${esc(e[4])}</pre></div><div><h4>Réponse · ${e[5]}</h4><pre>${e[6]?hl(J(e[6],1)):'(corps vide)'}</pre></div><div style="grid-column:1/-1"><h4>curl</h4><pre>${esc(e[7])}</pre></div></div>`).join('');
+$$('.row').forEach((r,i)=>r.onclick=()=>{const o=$('#ex'+i).classList.toggle('open');r.setAttribute('aria-expanded',o)});
+
+/* ===== SLIDE 6: Playground with fake API ===== */
+let db=[{id:1,name:'Amira Ben Salah',email:'amira@esprit.tn'},{id:2,name:'Youssef Trabelsi',email:'youssef@esprit.tn'}],nextId=3;
+const fakeAPI=(method,path,raw)=>{
+  const m=path.trim().match(/^\/students(?:\/([^/]+))?\/?$/);
+  if(!m)return[404,{error:'Not Found',message:`Aucune route pour ${path}`}];
+  const id=m[1],hasId=id!==undefined;
+  let body;
+  if(['POST','PUT','PATCH'].includes(method)){try{body=JSON.parse(raw);if(!body||typeof body!=='object'||Array.isArray(body))throw 0}catch{return[400,{error:'Bad Request',message:'Le corps doit être un objet JSON valide'}]}}
+  const find=()=>hasId&&db.find(s=>String(s.id)===id);
+  const valid=(b,full)=>{for(const k of['name','email']){if(k in b?(typeof b[k]!=='string'||!b[k].trim()):full)return`"${k}" est obligatoire et doit être une chaîne non vide`}
+    if(b.email&&!/^\S+@\S+\.\S+$/.test(b.email))return'"email" n’est pas un email valide';return null};
+  switch(method){
+    case'GET':if(!hasId)return[200,db];{const s=find();return s?[200,s]:[404,{error:'Not Found',message:`L’étudiant ${id} n’existe pas`}]}
+    case'POST':{if(hasId)return[405,{error:'Method Not Allowed',message:'POST s’utilise sur /students'}];const e=valid(body,true);if(e)return[400,{error:'Bad Request',message:e}];const s={id:nextId++,name:body.name.trim(),email:body.email};db.push(s);return[201,s]}
+    case'PUT':case'PATCH':{if(!hasId)return[405,{error:'Method Not Allowed',message:`${method} nécessite /students/:id`}];const s=find();if(!s)return[404,{error:'Not Found',message:`L’étudiant ${id} n’existe pas`}];const e=valid(body,method==='PUT');if(e)return[400,{error:'Bad Request',message:e}];
+      const n=method==='PUT'?{id:s.id,name:body.name,email:body.email}:{...s,...Object.fromEntries(['name','email'].filter(k=>k in body).map(k=>[k,body[k]]))};db[db.indexOf(s)]=n;return[200,n]}
+    case'DELETE':{if(!hasId)return[405,{error:'Method Not Allowed',message:'DELETE nécessite /students/:id'}];const s=find();if(!s)return[404,{error:'Not Found',message:`L’étudiant ${id} n’existe pas`}];db=db.filter(x=>x!==s);return[204,null]}
+  }};
+let flashId=null;
+function renderList(){$('#list').innerHTML=db.length?db.map(s=>`<li class="${s.id===flashId?'flash':''}"><em>${s.id}</em><div>${esc(s.name)}<br><small>${esc(s.email)}</small></div></li>`).join(''):'<li>Plus aucun étudiant. Créez-en un avec POST.</li>'}
+const PRE={GET:['/students',''],POST:['/students',J({name:'Sarra Mejri',email:'sarra@esprit.tn'})],PUT:['/students/1',J({name:'Amira B.',email:'amira@new.tn'})],PATCH:['/students/1',J({email:'patched@esprit.tn'})],DELETE:['/students/2','']};
+function preset(m){$('#m').value=m;$('#url').value=PRE[m][0];$('#body').value=PRE[m][1];$('#body').disabled=!PRE[m][1]&&m!=='GET'?false:false}
+$('#chips').innerHTML=['GET','POST','PUT','PATCH','DELETE'].map(m=>`<button class="chip" data-p="${m}">${m} exemple</button>`).join('')+'<button class="chip" data-p="BAD">exemple 404</button><button class="chip" data-p="BAD2">exemple 400</button>';
+$$('#chips .chip').forEach(c=>c.onclick=()=>{const p=c.dataset.p;if(p==='BAD'){preset('GET');$('#url').value='/students/99'}else if(p==='BAD2'){preset('POST');$('#body').value='{"name":""}'}else preset(p)});
+$('#m').onchange=e=>preset(e.target.value);
+$('#go').onclick=async()=>{
+  const m=$('#m').value,u=$('#url').value,t0=performance.now();$('#go').disabled=true;
+  await sleep(80+Math.random()*320);
+  const[st,data]=fakeAPI(m,u,$('#body').value),ms=Math.round(performance.now()-t0);
+  const sc=$('#sc');sc.textContent=st+' '+({200:'OK',201:'Created',204:'No Content',400:'Bad Request',404:'Not Found',405:'Method Not Allowed'}[st]);sc.className='sc '+(st<400?'ok':'err');
+  $('#tm').textContent=ms+' ms';$('#out').innerHTML=data===null?'(corps vide)':hl(J(data));
+  flashId=data&&data.id||null;renderList();flashId=null;$('#go').disabled=false;
+};
+preset('GET');renderList();
+
+/* ===== SLIDE 7: Quiz + confetti ===== */
+const Q=[
+ ['Quel verbe crée une ressource ?',['GET','POST','DELETE','PATCH'],1,'POST envoie une nouvelle ressource dans le corps.'],
+ ['Quelle technologie utilise des enveloppes XML ?',['SOAP','REST','GraphQL','HTTP'],0,'Les messages SOAP sont en XML, décrits par WSDL.'],
+ ['Quel code de statut signifie « Created » ?',['200','204','201','404'],2,'201 est renvoyé après un POST réussi.'],
+ ['Quelle est la différence entre PUT et PATCH ?',['Aucune','PUT remplace tout, PATCH modifie certains champs','PATCH supprime','PUT est en lecture seule'],1,'PUT envoie la ressource complète ; PATCH seulement les changements.'],
+ ['Quel style permet au client de choisir les champs exacts via un seul endpoint ?',['SOAP','REST','GraphQL','FTP'],2,'GraphQL évite la sur- et la sous-récupération de données.'],
+ ['« Stateless » (sans état) en REST signifie…',['Pas de base de données','Chaque requête contient toutes les infos nécessaires','Pas d’authentification','Pas d’URL'],1,'Le serveur ne garde aucune session entre les requêtes.'],
+ ['GET /students/999 pour un étudiant inconnu renvoie…',['200','201','404','500'],2,'404 Not Found : la ressource n’existe pas.'],
+ ['Un DELETE réussi renvoie généralement…',['204 No Content','201 Created','400','302'],0,'Il ne reste plus rien à renvoyer.']];
+let qi=0,score=0;
+function showQ(){
+  const q=Q[qi];$('#qbar i').style.width=(qi/Q.length*100)+'%';$('#qn').textContent=`Question ${qi+1} sur ${Q.length}`;$('#qt').textContent=q[0];$('#fb').textContent='';$('#qnext').hidden=true;
+  $('#qo').innerHTML=q[1].map((o,i)=>`<button class="opt" data-o="${i}">${esc(o)}</button>`).join('');
+  $$('.opt').forEach(b=>b.onclick=()=>{const k=+b.dataset.o,ok=k===q[2];if(ok)score++;
+    $$('.opt').forEach((x,i)=>{x.disabled=true;if(i===q[2])x.classList.add('right')});if(!ok)b.classList.add('wrong');
+    $('#fb').textContent=(ok?'Correct ! ':'Pas tout à fait. ')+q[3];$('#qnext').hidden=false;$('#qnext').textContent=qi===Q.length-1?'Voir mon score':'Suivant';$('#qnext').focus()});
+}
+$('#qnext').onclick=()=>{qi++;if(qi<Q.length)return showQ();
+  $('#qbar i').style.width='100%';$('#qn').textContent='Terminé';const pct=score/Q.length;
+  $('#qt').textContent=`Score : ${score} / ${Q.length}`;$('#qo').innerHTML='';
+  $('#fb').textContent=pct>=.75?'Excellent ! Vous maîtrisez les bases de REST. 🎉':pct>=.5?'Bon travail, relisez les diapositives et réessayez.':'Courage, le terrain de jeu est un excellent entraînement.';
+  $('#qnext').textContent='Réessayer';$('#qnext').onclick=()=>{qi=0;score=0;$('#qnext').onclick=null;location.reload()};if(pct>=.5)confetti()};
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const c=$('#conf'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const cols=['#F7D2D7','#8096B8','#B3CFBF','#F0E8B1','#C2B5D0','#C1D8E8'];
+  const ps=Array.from({length:160},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height/2,vx:Math.random()*4-2,vy:Math.random()*4+2,r:Math.random()*6+3,c:cols[Math.random()*6|0],a:Math.random()*6}));
+  let f=0;(function d(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.a+=.1;x.fillStyle=p.c;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillRect(-p.r,-p.r/2,p.r*2,p.r);x.restore()});if(++f<220)requestAnimationFrame(d);else x.clearRect(0,0,c.width,c.height)})();
+}
+showQ();
+
+/* ===== INIT ===== */
+$$('.rv').forEach(e=>io.observe(e));onScroll();
+</script>
+</body>
+</html>
